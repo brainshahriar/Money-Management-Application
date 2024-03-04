@@ -16,15 +16,17 @@ class ExpenseResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
+        $rtrData = [
             'id' => $this->id,
             'amount' => $this->amount,
             'account' => new AccountResource($this->account),
             'category' => new CategoryResource($this->category),
             'comments' => $this->comments,
-            'photo' => $this->photo,
+            'photo' => $this->media,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+
+        return $rtrData;
     }
 }

@@ -32,13 +32,13 @@ class ExpenseRequest extends FormRequest
                 'required','integer','exists:accounts,id'
             ],
             'category_id' => [
-                'nullable', 'integer', 'exists:categories,id'
+                'nullable', 'exists:categories,id'
             ],
             'comments' => [
                 'nullable', 'string'
             ],
-            'photo' => [
-                'nullable', 'mimes:jpg,jpeg,png'
+            'photo.*' => [
+                'nullable','image', 'mimes:jpg,jpeg,png'
             ]
         ];
     }

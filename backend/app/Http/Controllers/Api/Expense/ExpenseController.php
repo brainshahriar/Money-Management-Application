@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Expense\ExpenseRequest;
 use App\Http\Resources\Expense\ExpenseResource;
 use App\Models\Account\Account;
+use App\Models\Category\Category;
 use App\Models\Expense\Expense;
+use App\Models\Media\Media;
 use App\Traits\Common\RespondsWithHttpStatus;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,12 +19,16 @@ class ExpenseController extends Controller
     /**
      * list of categories.
      *
-     * @return JsonResponse
+     * @return mixed
      */
-    public function index(): JsonResponse
+    public function index(): mixed
     {
         $expense =  Expense::all();
-        return $this->success(__('Expense Lists'), ExpenseResource::collection($expense));
+        return [
+            'accounts' => Account::all(),
+            'categories' => Category::all(),
+            'expense' => $expense
+        ];
     }
 
     /**
@@ -40,16 +46,26 @@ class ExpenseController extends Controller
             'comments',
             'photo'
         ]);
-        $account = Account::findOrFail($data['account_id']);
-
-        $total_balance = $account->amount + $data['amount'];
-
-        $account->amount = $total_balance;
-
-        $account->save();
-        
+    
         $expenses = Expense::create($data);
+        
+        // Store media for the expense if 'photo' files are provided
+        if ($request->hasFile('photo')) {
+            foreach ($request->file('photo') as $file) {
+                $media = new Media();
+                $media->file_path = $file->store('photos');
+                // $media->save();
+                $expenses->media()->save($media);
+            }
+        }
+    
+        $account = Account::findOrFail($data['account_id']);
+        $total_balance = $account->amount + $data['amount'];
+        $account->amount = $total_balance;
+        $account->save();
+    
         $expenses = $expenses->fresh();
+    
         return $this->success(__('Expense added Successfully'), new ExpenseResource($expenses), Response::HTTP_CREATED);
     }
 

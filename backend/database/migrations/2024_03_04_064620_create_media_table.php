@@ -13,12 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('expenses', function (Blueprint $table) {
+        Schema::create('media', function (Blueprint $table) {
             $table->id();
-            $table->integer('amount');
-            $table->foreignId('account_id')->constrained('accounts')->cascadeOndelete();
-            $table->foreignId('category_id')->nullable();
-            $table->text('comments')->nullable();
+            $table->unsignedBigInteger('mediable_id')->nullable();
+            $table->string('mediable_type')->nullable();
+            $table->string('file_path')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('expenses');
+        Schema::dropIfExists('media');
     }
 };
