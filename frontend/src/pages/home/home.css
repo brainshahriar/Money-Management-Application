@@ -1,0 +1,80 @@
+.home{
+    flex: 4;
+}
+
+.homeWidgets{
+    display: flex;
+    margin: 20px;
+}
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+  }
+  
+  button {
+    width: 200px;
+    padding: 10px 15px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  button.active {
+    background-color: gray;
+    color: white;
+  }
+
+  .modal-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    outline: none;
+    max-width: 80%;
+    width: 400px;
+    text-align: center;
+  }
+  .color-picker{
+    margin-top: 20px;
+  }
+  .color-picker-label{
+    margin-top: 10px;
+    margin-right: 320px;
+  }
+  .css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input {
+    padding-right: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+.btn-modal{
+  width: 100px;
+}
+.footer{
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.css-o9k5xi-MuiInputBase-root-MuiOutlinedInput-root{
+  margin-top: 15px;
+}
+.total-balance{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 550px;
+  cursor: pointer;
+}
+.balance{
+  margin-left: 600px;
+}
+  
