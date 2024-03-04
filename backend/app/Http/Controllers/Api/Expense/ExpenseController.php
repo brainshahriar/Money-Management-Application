@@ -52,8 +52,10 @@ class ExpenseController extends Controller
         // Store media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
             foreach ($request->file('photo') as $file) {
+                $uniqueName = date('YmdHis') . uniqid();
+                $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
                 $media = new Media();
-                $media->file_path = $file->store('photos');
+                $media->file_path = $file->storeAs('photos',$uniqueNameWithExtension,'public');
                 // $media->save();
                 $expenses->media()->save($media);
             }
