@@ -112,7 +112,7 @@ class ExpenseController extends Controller
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
                 $k[]=$key;  
-                // $path []= $uniqueNameWithExtension;
+                $path []= $uniqueNameWithExtension;
 
                 // $media = new Media();
                 // $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
@@ -195,7 +195,7 @@ class ExpenseController extends Controller
      */
     protected function unlinkFiles(array $filePaths = [], string $disk = 'local'): void
     {
-        // dd($filePaths);
+        dd($filePaths);
 
         foreach ($filePaths as $path) {
             // Adjust the file path to match the storage directory
