@@ -101,22 +101,36 @@ class ExpenseController extends Controller
             'account_id',
             'comments'
         ]);
+
+        $existingMedia = $expense->media;
+
+  
         
         // update media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
-            $existingMedia = $expense->media;
-            foreach ($request->file('photo') as $key=>$file) {
-                $paths[] = $file->getPathname();
+            foreach ($request->file('photo') as $key=>$file) { 
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
+                $k[]=$key;  
+                // $path []= $uniqueNameWithExtension;
+
                 // $media = new Media();
                 // $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
 
                 // // $media->save();
                 // $expense->media()->save($media);
             }
-            dd($paths);
-            $this->unlinkFiles($existingMedia->pluck('file_path')->toArray());
+            $commonValues = [];
+            foreach ($existingMedia as $key => $value) {
+                if (in_array($key, $k)) {
+                    $commonValues[$key] = $value->file_path;
+                }
+            }
+            
+            // dd($commonValues);
+            
+
+            $this->unlinkFiles($commonValues);
         }
 
         $expense->update($data);
@@ -181,14 +195,14 @@ class ExpenseController extends Controller
      */
     protected function unlinkFiles(array $filePaths = [], string $disk = 'local'): void
     {
-        dd($filePaths);
+        // dd($filePaths);
 
         foreach ($filePaths as $path) {
             // Adjust the file path to match the storage directory
             $storagePath = '/' . $path;
 
             if ($disk == 'local') {
-                // Storage::delete($storagePath);
+                Storage::delete($storagePath);
             }
         }
     }
