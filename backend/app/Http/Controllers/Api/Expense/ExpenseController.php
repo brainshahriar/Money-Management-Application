@@ -105,7 +105,8 @@ class ExpenseController extends Controller
         // update media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
             $existingMedia = $expense->media;
-            foreach ($request->file('photo') as  $file) {
+            foreach ($request->file('photo') as $key=>$file) {
+                $paths[] = $file->getPathname();
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
                 // $media = new Media();
@@ -114,6 +115,7 @@ class ExpenseController extends Controller
                 // // $media->save();
                 // $expense->media()->save($media);
             }
+            dd($paths);
             $this->unlinkFiles($existingMedia->pluck('file_path')->toArray());
         }
 
