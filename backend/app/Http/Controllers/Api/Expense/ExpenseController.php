@@ -108,11 +108,11 @@ class ExpenseController extends Controller
             foreach ($request->file('photo') as  $file) {
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
-                $media = new Media();
-                $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                // $media = new Media();
+                // $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
 
-                // $media->save();
-                $expense->media()->save($media);
+                // // $media->save();
+                // $expense->media()->save($media);
             }
             $this->unlinkFiles($existingMedia->pluck('file_path')->toArray());
         }
@@ -179,12 +179,14 @@ class ExpenseController extends Controller
      */
     protected function unlinkFiles(array $filePaths = [], string $disk = 'local'): void
     {
+        dd($filePaths);
+
         foreach ($filePaths as $path) {
             // Adjust the file path to match the storage directory
             $storagePath = '/' . $path;
 
             if ($disk == 'local') {
-                Storage::delete($storagePath);
+                // Storage::delete($storagePath);
             }
         }
     }
