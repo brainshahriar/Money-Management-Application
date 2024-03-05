@@ -103,8 +103,9 @@ class ExpenseController extends Controller
         ]);
 
         $existingMedia = $expense->media;
-
-  
+        foreach ($existingMedia as $media) {
+            dd($media->id);
+        }
         
         // update media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
@@ -112,8 +113,6 @@ class ExpenseController extends Controller
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
                 $k[]=$key;  
-                $path []= $uniqueNameWithExtension;
-
                 // $media = new Media();
                 // $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
 
