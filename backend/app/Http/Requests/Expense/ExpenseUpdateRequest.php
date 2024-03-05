@@ -13,7 +13,7 @@ class ExpenseUpdateRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,20 @@ class ExpenseUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            //
-        ];
+            'amount' =>[
+                'numeric'
+            ],
+            'account_id' => [
+                'numeric','exists:accounts,id'
+            ],
+            'category_id' => [
+                'exists:categories,id','nullable'
+            ],
+            'comments' => [
+                'string','nullable'
+            ],
+            'photo.*' => [
+                'nullable','image', 'mimes:jpg,jpeg,png'
+            ]        ];
     }
 }

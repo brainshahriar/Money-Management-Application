@@ -29,8 +29,11 @@ class Expense extends Model
      */
     protected static function booted(): void
     {
-        static::deleting(function ($expenses) {
-            $expenses->media->delete();
+        static::deleting(function ($expense) {
+            // Loop through each media item and delete them individually
+            $expense->media->each(function ($media) {
+                $media->delete();
+            });
         });
     }
 
@@ -61,6 +64,6 @@ class Expense extends Model
      */
     public function media(): MorphMany
     {
-        return $this->morphMany(Media::class,'mediable');
+        return $this->morphMany(Media::class, 'mediable');
     }
 }
