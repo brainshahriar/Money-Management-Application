@@ -56,10 +56,10 @@ class ExpenseController extends Controller
             foreach ($request->file('photo') as  $file) {
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
-                $media = new Media();
-                $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                // $media = new Media();
+                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
                 // $media->save();
-                $expenses->media()->save($media);
+                $expenses->media()->create(['file_path' => $path]);
             }
         }
 
@@ -101,35 +101,19 @@ class ExpenseController extends Controller
             'account_id',
             'comments'
         ]);
-
-        $existingMedia = $expense->media;
-        foreach ($existingMedia as $media) {
-            dd($media->id);
-        }
         
         // update media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
-            foreach ($request->file('photo') as $key=>$file) { 
+            $existingMedia = $expense->media;
+            foreach ($request->file('photo') as $key=>$file) {
+                $paths[] = $file->getPathname();
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
-                $k[]=$key;  
-                // $media = new Media();
-                // $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
 
-                // // $media->save();
-                // $expense->media()->save($media);
+                $expense->media()->create(['file_path' => $path]);
             }
-            $commonValues = [];
-            foreach ($existingMedia as $key => $value) {
-                if (in_array($key, $k)) {
-                    $commonValues[$key] = $value->file_path;
-                }
-            }
-            
-            // dd($commonValues);
-            
-
-            $this->unlinkFiles($commonValues);
+            $this->unlinkFiles($existingMedia->pluck('file_path')->toArray());
         }
 
         $expense->update($data);
@@ -194,7 +178,6 @@ class ExpenseController extends Controller
      */
     protected function unlinkFiles(array $filePaths = [], string $disk = 'local'): void
     {
-        dd($filePaths);
 
         foreach ($filePaths as $path) {
             // Adjust the file path to match the storage directory
