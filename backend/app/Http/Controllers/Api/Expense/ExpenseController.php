@@ -109,9 +109,11 @@ class ExpenseController extends Controller
                 $paths[] = $file->getPathname();
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
-                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                $media = new Media();
+                $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
 
-                $expense->media()->create(['file_path' => $path]);
+                // $media->save();
+                $expense->media()->save($media);
             }
             $this->unlinkFiles($existingMedia->pluck('file_path')->toArray());
         }
