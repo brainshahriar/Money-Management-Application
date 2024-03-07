@@ -101,19 +101,29 @@ class ExpenseController extends Controller
             'account_id',
             'comments'
         ]);
-        
         // update media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
             $existingMedia = $expense->media;
-            foreach ($request->file('photo') as $key=>$file) {
+            foreach ($request->file('photo') as $key => $file) {
                 $paths[] = $file->getPathname();
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
-                $media = new Media();
-                $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
-
-                // $media->save();
-                $expense->media()->save($media);
+                // Check if there is existing media to update
+                if ($existingMedia->count() > $key) {
+                    // Update existing media file
+                    $existingMediaItem = $existingMedia[$key];
+                    $existingMediaItem->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                    $existingMediaItem->save();
+                } else {
+                    // Create new media entry
+                    $media = new Media();
+                    $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                    $expense->media()->save($media);
+                }
+            }
+            //  Delete any remaining existing media entries
+            foreach ($existingMedia->slice(count($request->file('photo'))) as $mediaItem) {
+                $mediaItem->delete();
             }
             $this->unlinkFiles($existingMedia->pluck('file_path')->toArray());
         }
@@ -160,15 +170,15 @@ class ExpenseController extends Controller
      * 
      */
 
-     public function removeImage(Media $media): JsonResponse
-     {
+    public function removeImage(Media $media): JsonResponse
+    {
         $filePath = $media->file_path;
-        if($filePath){
+        if ($filePath) {
             $this->unlinkFiles([$filePath]);
         }
         $media->delete();
         return $this->success(__('Image Deleted Successfully'));
-     }
+    }
 
 
     /**
