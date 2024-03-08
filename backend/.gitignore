@@ -4,6 +4,7 @@
 /public/storage
 /storage/*.key
 /storage/logs/*
+/storage
 /storage/framework/*
 /vendor
 .env.production
