@@ -102,8 +102,8 @@ class ExpenseController extends Controller
             'comments',
             'photo_ids'
         ]);
-        if($request->has('photo_ids')){
-            foreach($data['photo_ids'] as $ids){
+        if ($request->has('photo_ids')) {
+            foreach ($data['photo_ids'] as $ids) {
                 $photos = Media::findOrFail($ids);
                 $photos->delete();
                 $this->unlinkFiles([$photos->file_path]);
@@ -141,6 +141,11 @@ class ExpenseController extends Controller
     {
         // Get the file paths of associated media items
         $filePaths = $expense->media->pluck('file_path')->toArray();
+
+        // update total balance
+        $currentAccountBalance = $expense->account->amount - $expense->amount;
+        $expense->account->amount = $currentAccountBalance;
+        $expense->account->save();
 
         // Delete the expense
         $result = $expense->delete();

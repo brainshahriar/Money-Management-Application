@@ -25,7 +25,6 @@ const EditModals = ({ isOpen, onClose, accountId }) => {
   const dispatch = useDispatch();
   const { editErrorMessage } = useSelector((state) => state.account);
   const accountEdit = useSelector(selectAccount);
-  const [account, setAccount] = useState(accountEdit);
 
   const [amount, setAmount] = useState("");
   const [name, setName] = useState("");
