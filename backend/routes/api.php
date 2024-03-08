@@ -44,8 +44,6 @@ Route::middleware(['auth:api', AuthGates::class])->group(function () {
     Route::resource('categories',CategoryController::class);
     // expense routes
     Route::resource('expenses', ExpenseController::class);
-    // remove image
-    Route::delete('media/{media}',[ExpenseController::class, 'removeImage']);
 
 });
 

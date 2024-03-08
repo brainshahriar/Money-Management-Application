@@ -38,6 +38,10 @@ class ExpenseUpdateRequest extends FormRequest
             ],
             'photo.*' => [
                 'nullable','image', 'mimes:jpg,jpeg,png'
-            ]        ];
+            ],
+            'photo_ids.*' => [
+                'nullable'
+            ]        
+        ];
     }
 }
