@@ -24,20 +24,24 @@ class ExpenseUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'amount' =>[
+            'amount' => [
                 'numeric'
             ],
             'account_id' => [
-                'numeric','exists:accounts,id'
+                'numeric', 'exists:accounts,id'
             ],
             'category_id' => [
-                'exists:categories,id','nullable'
+                'exists:categories,id', 'nullable'
             ],
             'comments' => [
-                'string','nullable'
+                'string', 'nullable'
             ],
             'photo.*' => [
-                'nullable','image', 'mimes:jpg,jpeg,png'
-            ]        ];
+                'nullable', 'image', 'mimes:jpg,jpeg,png'
+            ],
+            'photo_ids.*' => [
+                'nullable'
+            ]
+        ];
     }
 }

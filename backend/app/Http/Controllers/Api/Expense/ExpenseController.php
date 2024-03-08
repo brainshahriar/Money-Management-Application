@@ -99,36 +99,33 @@ class ExpenseController extends Controller
             'amount',
             'category_id',
             'account_id',
-            'comments'
+            'comments',
+            'photo_ids'
         ]);
+        if($request->has('photo_ids')){
+            foreach($data['photo_ids'] as $ids){
+                $photos = Media::findOrFail($ids);
+                $photos->delete();
+                $this->unlinkFiles([$photos->file_path]);
+            }
+        }
         // update media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
-            $existingMedia = $expense->media;
-            foreach ($request->file('photo') as $key => $file) {
+            foreach ($request->file('photo') as $file) {
                 $paths[] = $file->getPathname();
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
-                // Check if there is existing media to update
-                if ($existingMedia->count() > $key) {
-                    // Update existing media file
-                    $existingMediaItem = $existingMedia[$key];
-                    $existingMediaItem->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
-                    $existingMediaItem->save();
-                } else {
-                    // Create new media entry
-                    $media = new Media();
-                    $media->file_path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
-                    $expense->media()->save($media);
-                }
+                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+
+                $expense->media()->create(['file_path' => $path]);
             }
-            //  Delete any remaining existing media entries
-            foreach ($existingMedia->slice(count($request->file('photo'))) as $mediaItem) {
-                $mediaItem->delete();
-            }
-            $this->unlinkFiles($existingMedia->pluck('file_path')->toArray());
         }
 
         $expense->update($data);
+        $account = Account::findOrFail($data['account_id']);
+        $total_balance = $account->amount + $data['amount'];
+        $account->amount = $total_balance;
+        $account->save();
         $expense = $expense->fresh();
         return $this->success(__('Expense Updated Successfully'), new ExpenseResource($expense), Response::HTTP_OK);
     }
@@ -160,26 +157,6 @@ class ExpenseController extends Controller
         // If deletion failed, return failure response
         return $this->failure(__('Expense Deletion Failed'));
     }
-
-    /**
-     * delete indivially associated files
-     * 
-     * @param Media $media
-     * 
-     * @return JsonResponse
-     * 
-     */
-
-    public function removeImage(Media $media): JsonResponse
-    {
-        $filePath = $media->file_path;
-        if ($filePath) {
-            $this->unlinkFiles([$filePath]);
-        }
-        $media->delete();
-        return $this->success(__('Image Deleted Successfully'));
-    }
-
 
     /**
      * Unlink files from storage
