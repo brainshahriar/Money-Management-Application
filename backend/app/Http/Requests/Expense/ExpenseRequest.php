@@ -32,7 +32,7 @@ class ExpenseRequest extends FormRequest
                 'required','integer','exists:accounts,id'
             ],
             'category_id' => [
-                'nullable', 'exists:categories,id'
+                'required','integer', 'exists:categories,id'
             ],
             'comments' => [
                 'nullable', 'string'

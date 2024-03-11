@@ -10,52 +10,65 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import {
+  EXPENSE_CREATE_ERROR_MESSAGE,
+  createExpense,
+  getAllExpenses,
+} from "../../redux/features/expenses/expenseSlice";
 
-const ExpenseModals = ({ isOpen, onClose }) => {
-  const currencies = [
-    "USD",
-    "EUR",
-    "GBP",
-    "JPY",
-    "AUD",
-    "CAD",
-    "BDT",
-    "CNY",
-    "SEK",
-    "NZD", // Add more currencies as needed
-  ];
-  const allowedIcons = [
-    "AccessAlarm",
-    "AccessAlarms",
-    "Accessibility",
-    "Accessible",
-  ];
+const ExpenseModals = ({
+  isOpen,
+  onClose,
+  activeTab,
+  allAccounts,
+  allCategories,
+}) => {
+  const dispatch = useDispatch();
+  const { createErrorMessage } = useSelector((state) => state.expense);
 
-  const iconList = allowedIcons.map((iconName) => ({
-    value: iconName,
-    label: iconName,
-    component: Icons[iconName],
-  }));
   const [amount, setAmount] = useState("");
-  const [name, setName] = useState("");
-  const [icon, setIcon] = useState("");
-  const [currency, setCurrency] = useState("");
+  const [account, setAccount] = useState("");
+  const [category, setCategory] = useState("");
+  const [comments, setComments] = useState("");
+  const [expenseType, setExpenseType] = useState(0);
+
+  useEffect(() => {
+    if (activeTab === "expenses") {
+      setExpenseType(1);
+    } else if (activeTab === "income") {
+      setExpenseType(2);
+    }
+  }, [activeTab]);
 
   const today = dayjs();
 
-  const handleSave = () => {
-    setAmount("");
-    setName("");
-    setIcon("");
-    setCurrency("");
+  const handleSave = async () => {
+    const formData = {
+      amount: amount,
+      account_id: account,
+      category_id: category,
+      comments,
+    };
+    const response = await dispatch(createExpense(formData));
 
-    onClose();
+    if (response.payload.success === true) {
+      dispatch(EXPENSE_CREATE_ERROR_MESSAGE(""));
+      //  Reset state variables
+      setAmount("");
+      setAccount("");
+      setCategory("");
+      setComments("");
+      onClose();
+    }
+    dispatch(getAllExpenses());
   };
 
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className="modal-container">
-        <h2>Add Transactions</h2>
+        <h2>Add Expense</h2>
         <TextField
           style={{ marginTop: "15px" }}
           label="Amount"
@@ -66,24 +79,33 @@ const ExpenseModals = ({ isOpen, onClose }) => {
             startAdornment: <InputAdornment position="start">$</InputAdornment>,
           }}
         />
+        {createErrorMessage && (
+          <p className="error-message">{createErrorMessage.amount}</p>
+        )}
         <TextField
           style={{ marginTop: "15px" }}
           select
           label="Account"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
+          value={account}
+          onChange={(e) => setAccount(e.target.value)}
           fullWidth
         >
-          {currencies.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          ))}
+          {allAccounts.map((accounts, index) => {
+            const { id, account_name } = accounts;
+            return (
+              <MenuItem key={id} value={id}>
+                {account_name}
+              </MenuItem>
+            );
+          })}
         </TextField>
+        {createErrorMessage && (
+          <p className="error-message">{createErrorMessage.account_id}</p>
+        )}
         <TextField
           label="Comments"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={comments}
+          onChange={(e) => setComments(e.target.value)}
           fullWidth
           multiline
           rows={2} // Specify the number of rows you want
@@ -93,16 +115,22 @@ const ExpenseModals = ({ isOpen, onClose }) => {
           style={{ marginTop: "15px" }}
           select
           label="Choose Category"
-          value={icon}
-          onChange={(e) => setIcon(e.target.value)}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
           fullWidth
         >
-          {iconList.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              <option.component /> {option.label}
-            </MenuItem>
-          ))}
+          {allCategories.map((categories, index) => {
+            const { id, category_name } = categories;
+            return (
+              <MenuItem key={id} value={id}>
+                {category_name}
+              </MenuItem>
+            );
+          })}
         </TextField>
+        {createErrorMessage && (
+          <p className="error-message">{createErrorMessage.category_id}</p>
+        )}
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker defaultValue={today} />
         </LocalizationProvider>

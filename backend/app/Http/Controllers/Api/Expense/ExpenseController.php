@@ -29,7 +29,7 @@ class ExpenseController extends Controller
         return [
             'accounts' => Account::all(),
             'categories' => Category::all(),
-            'expense' => $expense
+            'expense' => ExpenseResource::collection($expense)
         ];
     }
 

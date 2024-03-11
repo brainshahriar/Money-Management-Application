@@ -4,48 +4,27 @@ import "./ExpensesTab.css";
 import { useState } from "react";
 import ExpenseModals from "../../pages/home/ExpenseModals";
 
-const ExpensesTab = () => {
-  const [isModalOpen, setModalOpen] = useState(false);
-
-  const openModal = () => {
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-  };
+const ExpensesTab = ({ expenses }) => {
+  console.log(expenses);
   return (
     <div>
-      <div className="add-icon-div">
-        <button className="add-icon-button" onClick={openModal}>
-          <AddIcon className="add-icon" fontSize="large" />
-        </button>
-        <ExpenseModals isOpen={isModalOpen} onClose={closeModal} />
-      </div>
       <table className="expenses-table">
         <tbody>
-          <tr>
-            <td className="expense-title">
-              <PublishIcon />
-              <p>Lunch</p>
-            </td>
-            <td>19%</td>
-            <td>$50.00</td>
-            <td>
-              <button className="edit-btn">Edit</button>
-            </td>
-          </tr>
-          <tr>
-            <td className="expense-title">
-              <AddIcon />
-              <p>Dinner</p>
-            </td>
-            <td>79%</td>
-            <td>$50.00</td>
-            <td className="td-btn">
-              <button className="edit-btn">Edit</button>
-            </td>
-          </tr>
+          {expenses.map((items, i) => {
+            return (
+              <tr key={i}>
+                <td className="expense-title">
+                  <PublishIcon />
+                  <p>{items.category.category_name}</p>
+                </td>
+                <td>19%</td>
+                <td>${items.amount}</td>
+                <td>
+                  <button className="edit-btn">Edit</button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

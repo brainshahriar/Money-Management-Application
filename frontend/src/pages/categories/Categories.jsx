@@ -10,7 +10,6 @@ import { useEffect } from "react";
 import { selectIsLoggedIn } from "../../redux/features/auth/authSlice";
 import Loader from "../../components/loader/Loader";
 import useRedirectLoggedOutUser from "../../customHook/useRedirectLoggedOutUser";
-import CategoryUpdateModals from "./CategoryUpdateModals";
 
 export default function Categories() {
   useRedirectLoggedOutUser("/login");

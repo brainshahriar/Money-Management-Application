@@ -2,26 +2,10 @@ import PublishIcon from "@mui/icons-material/Publish";
 import AddIcon from "@mui/icons-material/Add";
 import "./IncomesTab.css";
 import { useState } from "react";
-import IncomeModals from "../../pages/home/IncomeModals";
 
 const IncomesTab = () => {
-  const [isModalOpen, setModalOpen] = useState(false);
-
-  const openModal = () => {
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-  };
   return (
     <div>
-      <div className="add-icon-div">
-        <button className="add-icon-button" onClick={openModal}>
-          <AddIcon className="add-icon" fontSize="large" />
-        </button>
-        <IncomeModals isOpen={isModalOpen} onClose={closeModal} />
-      </div>
       <table className="expenses-table">
         <tbody>
           <tr>

@@ -31,7 +31,7 @@ class ExpenseUpdateRequest extends FormRequest
                 'numeric', 'exists:accounts,id'
             ],
             'category_id' => [
-                'exists:categories,id', 'nullable'
+                'exists:categories,id'
             ],
             'comments' => [
                 'string', 'nullable'
