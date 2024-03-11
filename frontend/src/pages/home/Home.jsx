@@ -21,9 +21,8 @@ export default function Home() {
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
 
-  const { message, isLoading, isError, expenses ,allAccounts ,allCategories } = useSelector(
-    (state) => state.expense
-  );
+  const { message, isLoading, isError, expenses, allAccounts, allCategories } =
+    useSelector((state) => state.expense);
 
   useEffect(() => {
     if (isLoggedIn === true) {
@@ -134,7 +133,13 @@ export default function Home() {
             <button className="add-icon-button" onClick={openModal}>
               <AddIcon className="add-icon" fontSize="large" />
             </button>
-            <ExpenseModals isOpen={isModalOpen} onClose={closeModal}  activeTab={activeTab} allAccounts={allAccounts} allCategories={allCategories}/>
+            <ExpenseModals
+              isOpen={isModalOpen}
+              onClose={closeModal}
+              activeTab={activeTab}
+              allAccounts={allAccounts}
+              allCategories={allCategories}
+            />
           </div>
           <div className="tabContent">
             {activeTab === "expenses" && <ExpensesTab expenses={expenses} />}

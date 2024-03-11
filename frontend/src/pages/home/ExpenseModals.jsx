@@ -17,6 +17,8 @@ import {
   createExpense,
   getAllExpenses,
 } from "../../redux/features/expenses/expenseSlice";
+import { IconButton } from "@mui/material";
+import { PhotoCamera, Close } from "@mui/icons-material";
 
 const ExpenseModals = ({
   isOpen,
@@ -32,38 +34,57 @@ const ExpenseModals = ({
   const [account, setAccount] = useState("");
   const [category, setCategory] = useState("");
   const [comments, setComments] = useState("");
-  const [expenseType, setExpenseType] = useState(0);
+  const [images, setImages] = useState([]);
 
-  useEffect(() => {
-    if (activeTab === "expenses") {
-      setExpenseType(1);
-    } else if (activeTab === "income") {
-      setExpenseType(2);
-    }
-  }, [activeTab]);
+  const handleImageChange = (e) => {
+    const fileList = Array.from(e.target.files);
+
+    const newImages = fileList.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    setImages((prevImages) => [...prevImages, ...newImages]);
+  };
+
+  const handleRemoveImage = (index) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
+  // useEffect(() => {
+  //   if (activeTab === "expenses") {
+  //     setExpenseType(1);
+  //   } else if (activeTab === "income") {
+  //     setExpenseType(2);
+  //   }
+  // }, [activeTab]);
 
   const today = dayjs();
 
   const handleSave = async () => {
-    const formData = {
-      amount: amount,
-      account_id: account,
-      category_id: category,
-      comments,
-    };
+    const formData = new FormData();
+    formData.append('amount', amount);
+    formData.append('account_id', account);
+    formData.append('category_id', category);
+    formData.append('comments', comments);
+    images.forEach((image, index) => {
+      formData.append(`photo[${index}]`, image.file);
+    });
     const response = await dispatch(createExpense(formData));
-
+  
     if (response.payload.success === true) {
       dispatch(EXPENSE_CREATE_ERROR_MESSAGE(""));
-      //  Reset state variables
+      // Reset state variables
       setAmount("");
       setAccount("");
       setCategory("");
       setComments("");
+      setImages([]); // Clear images array
       onClose();
     }
     dispatch(getAllExpenses());
   };
+  
 
   return (
     <Modal open={isOpen} onClose={onClose}>
@@ -134,17 +155,36 @@ const ExpenseModals = ({
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker defaultValue={today} />
         </LocalizationProvider>
-        <TextField
-          style={{ marginTop: "15px" }}
-          type="file"
-          label="Photo"
-          fullWidth
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">📷</InputAdornment>
-            ),
-          }}
-        />
+        <div>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            style={{ display: "none" }}
+            id="image-upload"
+          />
+          <label
+            htmlFor="image-upload"
+            style={{ cursor: "pointer", position: "relative" }}
+          >
+            <InputAdornment position="start">
+              <span className="image-label"><Icons.AddAPhoto></Icons.AddAPhoto>Add Photos</span>
+            </InputAdornment>
+          </label>
+          <div className="image-list">
+            {images.map((image, index) => (
+              <div key={index}>
+                <img
+                  src={image.url}
+                  alt={`Image ${index}`}
+                  style={{ width: "50px", height: "50px" }}
+                />
+                <div className="delete-icon" onClick={() => handleRemoveImage(index)}>X</div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="footer">
           <Button
             className="btn-modal"

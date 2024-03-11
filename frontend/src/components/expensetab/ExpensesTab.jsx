@@ -5,7 +5,6 @@ import { useState } from "react";
 import ExpenseModals from "../../pages/home/ExpenseModals";
 
 const ExpensesTab = ({ expenses }) => {
-  console.log(expenses);
   return (
     <div>
       <table className="expenses-table">

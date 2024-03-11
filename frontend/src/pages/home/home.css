@@ -58,7 +58,7 @@
   width: 100px;
 }
 .footer{
-  margin-top: 20px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -77,4 +77,23 @@
 .balance{
   margin-left: 600px;
 }
-  
+.image-list{
+  margin-top: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 2px;
+}
+.image-label{
+  margin-top: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap:10px;
+}
+.delete-icon{
+  cursor: pointer;
+}
+.delete-icon:hover{
+  color: red;
+}
