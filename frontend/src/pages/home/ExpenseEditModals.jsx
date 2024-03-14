@@ -13,17 +13,13 @@ import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import {
-  EXPENSE_CREATE_ERROR_MESSAGE,
   EXPENSE_EDIT_ERROR_MESSAGE,
-  createExpense,
   deleteExpense,
   getAllExpenses,
   getExpense,
   selectExpense,
   updateExpense,
 } from "../../redux/features/expenses/expenseSlice";
-import { IconButton } from "@mui/material";
-import { PhotoCamera, Close } from "@mui/icons-material";
 
 const ExpenseEditModals = ({
   isOpen,
@@ -42,8 +38,6 @@ const ExpenseEditModals = ({
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [imageId, setImageId] = useState([]);
-
-  console.log(images);
 
   useEffect(() => {
     if (!isOpen) {
@@ -69,18 +63,10 @@ const ExpenseEditModals = ({
   };
 
   const handleRemoveImage = (index, imageIds) => {
-    const arr = [...imageId, imageIds].filter((_, i) => i !== index);
+    const arr = [...imageId, imageIds].filter(id => id !== null);
     setImageId(arr);
     setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
-
-  // useEffect(() => {
-  //   if (activeTab === "expenses") {
-  //     setExpenseType(1);
-  //   } else if (activeTab === "income") {
-  //     setExpenseType(2);
-  //   }
-  // }, [activeTab]);
 
   const today = dayjs();
 
@@ -95,21 +81,15 @@ const ExpenseEditModals = ({
     imageId.forEach((id, index) => {
       formData.append(`photo_ids[${index}]`, id);
     });
-      images.forEach((image, index) => {
-        formData.append(`photo[${index}]`, image.file);
-      });
+    images.forEach((image, index) => {
+      formData.append(`photo[${index}]`, image.file);
+    });
 
     const response = await dispatch(updateExpense({ id, formData }));
 
     if (response.payload.success === true) {
       dispatch(EXPENSE_EDIT_ERROR_MESSAGE(""));
-      // Reset state variables
-      setAmount("");
-      setAccount("");
-      setCategory("");
-      setComments("");
-      setImages([]); // Clear images array
-      setImageId([]);
+      setImages([]);
       onClose();
     }
     dispatch(getAllExpenses());
@@ -122,7 +102,6 @@ const ExpenseEditModals = ({
   }, [selectedExpenseId]);
 
   // Check if expenseEdit exists before setting initial state
-
   useEffect(() => {
     if (expenseEdit) {
       setAmount(expenseEdit.amount || "");
@@ -236,7 +215,7 @@ const ExpenseEditModals = ({
                 <div
                   className="delete-icon"
                   onClick={() =>
-                    handleRemoveImage(index, image.id ? image.id : index)
+                    handleRemoveImage(index, image.id ? image.id : null)
                   }
                 >
                   X

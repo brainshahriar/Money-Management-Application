@@ -57,7 +57,7 @@ class ExpenseController extends Controller
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
                 // $media = new Media();
-                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'public');
                 // $media->save();
                 $expenses->media()->create(['file_path' => $path]);
             }
