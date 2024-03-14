@@ -33,7 +33,7 @@ const createExpense = async (formData) => {
   return response.data;
 };
 
-// Get a category
+// Get a expense
 const getExpense = async (id) => {
   const token = localStorage.getItem("token");
   const config = {
@@ -41,7 +41,7 @@ const getExpense = async (id) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(`${BACKEND_URL}/api/expense/${id}`,config);
+  const response = await axios.get(`${BACKEND_URL}/api/expenses/${id}`,config);
   return response.data;
 };
 
@@ -67,7 +67,7 @@ const updateExpense = async (id,formData) => {
       Authorization: `Bearer ${token}`,
     }
   };
-  const response = await axios.put(`${BACKEND_URL}/api/expenses/${id}`,formData,config);
+  const response = await axios.post(`${BACKEND_URL}/api/expenses/${id}`,formData,config);
   return response.data;
 };
 

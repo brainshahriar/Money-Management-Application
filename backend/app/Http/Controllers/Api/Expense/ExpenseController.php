@@ -115,17 +115,32 @@ class ExpenseController extends Controller
                 $paths[] = $file->getPathname();
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
-                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'local');
+                $path = $file->storeAs('photos', $uniqueNameWithExtension, 'public');
 
                 $expense->media()->create(['file_path' => $path]);
             }
         }
+        if ($request->has('account_id') && (int)$expense->account->id !== (int)$request->input('account_id')) {
+            $prevAmount = $expense->amount;
+            $prevAccountBalance = $expense->account->amount;
 
+            $prevAccount = Account::findOrFail($expense->account->id);
+
+            $updatedBalance  = $prevAccountBalance - $prevAmount;
+            $prevAccount->amount = $updatedBalance;
+            $prevAccount->save();
+        }
         $expense->update($data);
-        $account = Account::findOrFail($data['account_id']);
-        $total_balance = $account->amount + $data['amount'];
-        $account->amount = $total_balance;
-        $account->save();
+        $expense = $expense->fresh();
+
+        $account = Account::findOrFail($expense->account->id);
+
+
+        if ($request->has('amount')) {
+            $total_balance = $account->amount + $data['amount'];
+            $account->amount = $total_balance;
+            $account->save();
+        }
         $expense = $expense->fresh();
         return $this->success(__('Expense Updated Successfully'), new ExpenseResource($expense), Response::HTTP_OK);
     }
@@ -170,14 +185,14 @@ class ExpenseController extends Controller
      * @param string $disk
      * @return void
      */
-    protected function unlinkFiles(array $filePaths = [], string $disk = 'local'): void
+    protected function unlinkFiles(array $filePaths = [], string $disk = 'public'): void
     {
-
+        // dd($filePaths);
         foreach ($filePaths as $path) {
             // Adjust the file path to match the storage directory
             $storagePath = '/' . $path;
 
-            if ($disk == 'local') {
+            if ($disk == 'public') {
                 Storage::delete($storagePath);
             }
         }

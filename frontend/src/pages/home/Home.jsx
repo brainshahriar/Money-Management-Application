@@ -142,7 +142,13 @@ export default function Home() {
             />
           </div>
           <div className="tabContent">
-            {activeTab === "expenses" && <ExpensesTab expenses={expenses} />}
+            {activeTab === "expenses" && (
+              <ExpensesTab
+                expenses={expenses}
+                allAccounts={allAccounts}
+                allCategories={allCategories}
+              />
+            )}
             {activeTab === "income" && <IncomesTab />}
           </div>
         </div>

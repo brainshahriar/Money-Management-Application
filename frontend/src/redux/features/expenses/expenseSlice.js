@@ -49,6 +49,59 @@ export const createExpense = createAsyncThunk(
   }
 );
 
+// // delete single expense
+export const deleteExpense = createAsyncThunk(
+  "expense/delete-expense",
+  async (id, thunkAPI) => {
+    try {
+      return await expenseServices.deleteExpense(id);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      console.log(message);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// // update single expense
+export const updateExpense = createAsyncThunk(
+  "expense/update-expense",
+  async ({ id, formData }, thunkAPI) => {
+    try {
+      return await expenseServices.updateExpense(id, formData);
+    } catch (error) {
+      const message = error.response.data.errors;
+      console.log(message);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// //get single expense
+
+export const getExpense = createAsyncThunk(
+  "expense/get-single-expense",
+  async (id, thunkAPI) => {
+    try {
+      return await expenseServices.getExpense(id);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      console.log(message);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
   const expenseSlice = createSlice({
     name: "expense",
     initialState,
@@ -93,6 +146,51 @@ export const createExpense = createAsyncThunk(
           state.isError = true;
           state.createErrorMessage = action.payload;
         })
+        .addCase(deleteExpense.pending, (state) => {
+          state.isLoading = true;
+        })
+        .addCase(deleteExpense.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isSuccess = true;
+          state.isError = false;
+          // toast.success("Product deleted successfully");
+        })
+        .addCase(deleteExpense.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.message = action.payload;
+          // toast.error(action.payload);
+        })
+        .addCase(getExpense.pending, (state) => {
+          state.isLoading = true;
+        })
+        .addCase(getExpense.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isSuccess = true;
+          state.isError = false;
+          state.expense = action.payload.result;
+        })
+        .addCase(getExpense.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.message = action.payload;
+          // toast.error(action.payload);
+        })
+        .addCase(updateExpense.pending, (state) => {
+          state.isLoading = true;
+        })
+        .addCase(updateExpense.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isSuccess = true;
+          state.isError = false;
+          // toast.success("Product updated successfully");
+        })
+        .addCase(updateExpense.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.editErrorMessage = action.payload;
+          // toast.error(action.payload);
+        });
     },
   });
 

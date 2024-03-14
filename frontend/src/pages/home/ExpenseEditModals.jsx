@@ -14,27 +14,48 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import {
   EXPENSE_CREATE_ERROR_MESSAGE,
+  EXPENSE_EDIT_ERROR_MESSAGE,
   createExpense,
+  deleteExpense,
   getAllExpenses,
+  getExpense,
+  selectExpense,
+  updateExpense,
 } from "../../redux/features/expenses/expenseSlice";
 import { IconButton } from "@mui/material";
 import { PhotoCamera, Close } from "@mui/icons-material";
 
-const ExpenseModals = ({
+const ExpenseEditModals = ({
   isOpen,
   onClose,
-  activeTab,
+  selectedExpenseId,
   allAccounts,
   allCategories,
 }) => {
   const dispatch = useDispatch();
-  const { createErrorMessage } = useSelector((state) => state.expense);
-
+  const { editErrorMessage } = useSelector((state) => state.expense);
+  const expenseEdit = useSelector(selectExpense);
   const [amount, setAmount] = useState("");
   const [account, setAccount] = useState("");
   const [category, setCategory] = useState("");
   const [comments, setComments] = useState("");
   const [images, setImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [imageId, setImageId] = useState([]);
+
+  console.log(images);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setImageId([]);
+    }
+  }, [isOpen]);
+
+  const handleDelete = async (id) => {
+    dispatch(deleteExpense(id));
+    dispatch(getAllExpenses());
+    onClose();
+  };
 
   const handleImageChange = (e) => {
     const fileList = Array.from(e.target.files);
@@ -43,12 +64,14 @@ const ExpenseModals = ({
       file,
       url: URL.createObjectURL(file),
     }));
-
-    setImages((prevImages) => [...prevImages, ...newImages]);
+    setImages(newImages);
+    setPreviewImages((prevImages) => [...prevImages, ...newImages]);
   };
 
-  const handleRemoveImage = (index) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  const handleRemoveImage = (index, imageIds) => {
+    const arr = [...imageId, imageIds].filter((_, i) => i !== index);
+    setImageId(arr);
+    setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   // useEffect(() => {
@@ -61,35 +84,58 @@ const ExpenseModals = ({
 
   const today = dayjs();
 
-  const handleSave = async () => {
+  const handleUpdate = async (id) => {
     const formData = new FormData();
-    formData.append('amount', amount);
-    formData.append('account_id', account);
-    formData.append('category_id', category);
-    formData.append('comments', comments);
-    images.forEach((image, index) => {
-      formData.append(`photo[${index}]`, image.file);
+    formData.append("amount", amount);
+    formData.append("account_id", account);
+    formData.append("category_id", category);
+    formData.append("comments", comments);
+    formData.append("_method", "PUT");
+
+    imageId.forEach((id, index) => {
+      formData.append(`photo_ids[${index}]`, id);
     });
-    const response = await dispatch(createExpense(formData));
-  
+      images.forEach((image, index) => {
+        formData.append(`photo[${index}]`, image.file);
+      });
+
+    const response = await dispatch(updateExpense({ id, formData }));
+
     if (response.payload.success === true) {
-      dispatch(EXPENSE_CREATE_ERROR_MESSAGE(""));
+      dispatch(EXPENSE_EDIT_ERROR_MESSAGE(""));
       // Reset state variables
       setAmount("");
       setAccount("");
       setCategory("");
       setComments("");
       setImages([]); // Clear images array
+      setImageId([]);
       onClose();
     }
     dispatch(getAllExpenses());
   };
-  
 
+  useEffect(() => {
+    if (selectedExpenseId) {
+      dispatch(getExpense(selectedExpenseId));
+    }
+  }, [selectedExpenseId]);
+
+  // Check if expenseEdit exists before setting initial state
+
+  useEffect(() => {
+    if (expenseEdit) {
+      setAmount(expenseEdit.amount || "");
+      setCategory(expenseEdit.category.id || "");
+      setAccount(expenseEdit.account.id || "");
+      setComments(expenseEdit.comments || "");
+      setPreviewImages(expenseEdit.photo || "");
+    }
+  }, [expenseEdit]);
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className="modal-container">
-        <h2>Add Expense</h2>
+        <h2>Edit Expense</h2>
         <TextField
           style={{ marginTop: "15px" }}
           label="Amount"
@@ -101,8 +147,8 @@ const ExpenseModals = ({
             startAdornment: <InputAdornment position="start">$</InputAdornment>,
           }}
         />
-        {createErrorMessage && (
-          <p className="error-message">{createErrorMessage.amount}</p>
+        {editErrorMessage && (
+          <p className="error-message">{editErrorMessage.amount}</p>
         )}
         <TextField
           style={{ marginTop: "15px" }}
@@ -121,8 +167,8 @@ const ExpenseModals = ({
             );
           })}
         </TextField>
-        {createErrorMessage && (
-          <p className="error-message">{createErrorMessage.account_id}</p>
+        {editErrorMessage && (
+          <p className="error-message">{editErrorMessage.account_id}</p>
         )}
         <TextField
           label="Comments"
@@ -150,8 +196,8 @@ const ExpenseModals = ({
             );
           })}
         </TextField>
-        {createErrorMessage && (
-          <p className="error-message">{createErrorMessage.category_id}</p>
+        {editErrorMessage && (
+          <p className="error-message">{editErrorMessage.category_id}</p>
         )}
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker defaultValue={today} />
@@ -170,30 +216,49 @@ const ExpenseModals = ({
             style={{ cursor: "pointer", position: "relative" }}
           >
             <InputAdornment position="start">
-              <span className="image-label"><Icons.AddAPhoto></Icons.AddAPhoto>Add Photos</span>
+              <span className="image-label">
+                <Icons.AddAPhoto></Icons.AddAPhoto>Add Photos
+              </span>
             </InputAdornment>
           </label>
           <div className="image-list">
-            {images.map((image, index) => (
+            {previewImages.map((image, index) => (
               <div key={index}>
                 <img
-                  src={image.url}
+                  src={
+                    image.file_path
+                      ? `http://localhost:8000/storage/${image.file_path}`
+                      : image.url
+                  }
                   alt={`Image ${index}`}
                   style={{ width: "50px", height: "50px" }}
                 />
-                <div className="delete-icon" onClick={() => handleRemoveImage(index)}>X</div>
+                <div
+                  className="delete-icon"
+                  onClick={() =>
+                    handleRemoveImage(index, image.id ? image.id : index)
+                  }
+                >
+                  X
+                </div>
               </div>
             ))}
           </div>
         </div>
+        <button
+          className="delete-btn"
+          onClick={() => handleDelete(selectedExpenseId)}
+        >
+          Delete
+        </button>
         <div className="footer">
           <Button
             className="btn-modal"
             variant="contained"
             color="primary"
-            onClick={handleSave}
+            onClick={() => handleUpdate(selectedExpenseId)}
           >
-            Save
+            Update
           </Button>
           <Button className="btn-modal" variant="contained" onClick={onClose}>
             Close
@@ -204,4 +269,4 @@ const ExpenseModals = ({
   );
 };
 
-export default ExpenseModals;
+export default ExpenseEditModals;
