@@ -120,27 +120,35 @@ class ExpenseController extends Controller
                 $expense->media()->create(['file_path' => $path]);
             }
         }
-        if ($request->has('account_id') && (int)$expense->account->id !== (int)$request->input('account_id')) {
-            $prevAmount = $expense->amount;
-            $prevAccountBalance = $expense->account->amount;
+        // if ($request->has('account_id') && (int)$expense->account->id !== (int)$request->input('account_id')) {
+        //     $prevAmount = $expense->amount;
+        //     $prevAccountBalance = $expense->account->amount;
 
-            $prevAccount = Account::findOrFail($expense->account->id);
+        //     $prevAccount = Account::findOrFail($expense->account->id);
 
-            $updatedBalance  = $prevAccountBalance - $prevAmount;
-            $prevAccount->amount = $updatedBalance;
-            $prevAccount->save();
-        }
-        $expense->update($data);
-        $expense = $expense->fresh();
+        //     $updatedBalance  = $prevAccountBalance - $prevAmount;
+        //     $prevAccount->amount = $updatedBalance;
+        //     $prevAccount->save();
+        // }
 
         $account = Account::findOrFail($expense->account->id);
 
-
         if ($request->has('amount')) {
-            $total_balance = $account->amount + $data['amount'];
-            $account->amount = $total_balance;
-            $account->save();
+            // update amount then its also deduct account balance
+            if ($expense->amount > (int)$data['amount']) {
+                $deductedAmount = $expense->amount - (int)$data['amount'];
+                $account->amount = $account->amount - $deductedAmount;
+                $account->save();
+            }
+            // update amount then its also add account balance
+            if ($expense->amount < (int)$data['amount']) {
+                $addedAmount = (int)$data['amount'] - $expense->amount;
+                $account->amount = $account->amount + $addedAmount;
+                $account->save();
+            }
+
         }
+        $expense->update($data);
         $expense = $expense->fresh();
         return $this->success(__('Expense Updated Successfully'), new ExpenseResource($expense), Response::HTTP_OK);
     }
@@ -187,10 +195,10 @@ class ExpenseController extends Controller
      */
     protected function unlinkFiles(array $filePaths = [], string $disk = 'public'): void
     {
-        // dd($filePaths);
         foreach ($filePaths as $path) {
             // Adjust the file path to match the storage directory
-            $storagePath = '/' . $path;
+            $storagePath = 'public/' . $path;
+            // dd($storagePath);
 
             if ($disk == 'public') {
                 Storage::delete($storagePath);

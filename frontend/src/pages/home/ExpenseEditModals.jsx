@@ -72,7 +72,9 @@ const ExpenseEditModals = ({
 
   const handleUpdate = async (id) => {
     const formData = new FormData();
-    formData.append("amount", amount);
+    if(amount !== expenseEdit.amount){
+      formData.append("amount", amount);
+    }
     formData.append("account_id", account);
     formData.append("category_id", category);
     formData.append("comments", comments);
