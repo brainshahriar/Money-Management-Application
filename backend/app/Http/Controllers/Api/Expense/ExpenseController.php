@@ -64,7 +64,7 @@ class ExpenseController extends Controller
         }
 
         $account = Account::findOrFail($data['account_id']);
-        $total_balance = $account->amount + $data['amount'];
+        $total_balance = $account->amount - $data['amount'];
         $account->amount = $total_balance;
         $account->save();
 
@@ -102,6 +102,8 @@ class ExpenseController extends Controller
             'comments',
             'photo_ids'
         ]);
+
+        //handle phot delete
         if ($request->has('photo_ids')) {
             foreach ($data['photo_ids'] as $ids) {
                 $photos = Media::findOrFail($ids);
@@ -112,41 +114,40 @@ class ExpenseController extends Controller
         // update media for the expense if 'photo' files are provided
         if ($request->hasFile('photo')) {
             foreach ($request->file('photo') as $file) {
-                $paths[] = $file->getPathname();
                 $uniqueName = date('YmdHis') . uniqid();
                 $uniqueNameWithExtension = $uniqueName . '.' . $file->extension();
                 $path = $file->storeAs('photos', $uniqueNameWithExtension, 'public');
-
                 $expense->media()->create(['file_path' => $path]);
             }
         }
-        // if ($request->has('account_id') && (int)$expense->account->id !== (int)$request->input('account_id')) {
-        //     $prevAmount = $expense->amount;
-        //     $prevAccountBalance = $expense->account->amount;
 
-        //     $prevAccount = Account::findOrFail($expense->account->id);
+        // if change account from existing expense 
 
-        //     $updatedBalance  = $prevAccountBalance - $prevAmount;
-        //     $prevAccount->amount = $updatedBalance;
-        //     $prevAccount->save();
-        // }
+        if ($request->has('account_id') && $expense->account->id !== (int)$data['account_id']) {
+            $oldAccount = $expense->account;
+            $newAccount = Account::findOrFail($data['account_id']);
 
+            // Deduct expense amount from old account and add to new account
+            $oldAccount->amount += $expense->amount;
+            $oldAccount->save();
+
+            $newAccount->amount -= $expense->amount;
+            $newAccount->save();
+        }
         $account = Account::findOrFail($expense->account->id);
 
+        // update account balance if expense balance is edited
         if ($request->has('amount')) {
-            // update amount then its also deduct account balance
             if ($expense->amount > (int)$data['amount']) {
                 $deductedAmount = $expense->amount - (int)$data['amount'];
-                $account->amount = $account->amount - $deductedAmount;
+                $account->amount = $account->amount + $deductedAmount;
                 $account->save();
             }
-            // update amount then its also add account balance
             if ($expense->amount < (int)$data['amount']) {
                 $addedAmount = (int)$data['amount'] - $expense->amount;
-                $account->amount = $account->amount + $addedAmount;
+                $account->amount = $account->amount - $addedAmount;
                 $account->save();
             }
-
         }
         $expense->update($data);
         $expense = $expense->fresh();
@@ -166,7 +167,7 @@ class ExpenseController extends Controller
         $filePaths = $expense->media->pluck('file_path')->toArray();
 
         // update total balance
-        $currentAccountBalance = $expense->account->amount - $expense->amount;
+        $currentAccountBalance = $expense->account->amount + $expense->amount;
         $expense->account->amount = $currentAccountBalance;
         $expense->account->save();
 
