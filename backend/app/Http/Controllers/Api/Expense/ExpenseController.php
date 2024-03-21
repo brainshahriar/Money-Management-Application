@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Expense;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Expense\ExpenseFilterRequest;
 use App\Http\Requests\Expense\ExpenseRequest;
 use App\Http\Requests\Expense\ExpenseUpdateRequest;
 use App\Http\Resources\Expense\ExpenseResource;
@@ -14,6 +15,7 @@ use App\Traits\Common\RespondsWithHttpStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
+use Carbon\Carbon;
 
 class ExpenseController extends Controller
 {
@@ -205,5 +207,19 @@ class ExpenseController extends Controller
                 Storage::delete($storagePath);
             }
         }
+    }
+
+    /**
+     * Display a listing of the expenses basen on search dates.
+     *
+     * @param ExpenseFilterRequest $request
+     * @return JsonResponse
+     */
+
+    public function searchByDate(ExpenseFilterRequest $request): JsonResponse
+    {
+        $date = Carbon::parse($request->input('date'));
+        $expenses = Expense::whereDate('created_at', $date)->get();
+        return $this->success(__('Expenses'), ExpenseResource::collection($expenses), Response::HTTP_OK);
     }
 }

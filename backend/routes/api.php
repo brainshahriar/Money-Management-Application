@@ -44,6 +44,8 @@ Route::middleware(['auth:api', AuthGates::class])->group(function () {
     Route::resource('categories',CategoryController::class);
     // expense routes
     Route::resource('expenses', ExpenseController::class);
+    // search expenses route
+    Route::post('expenses/search', [ExpenseController::class,'searchByDate']);
 
 });
 
