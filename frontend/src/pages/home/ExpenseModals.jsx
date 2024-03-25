@@ -6,19 +6,13 @@ import InputAdornment from "@mui/material/InputAdornment";
 import "./home.css";
 import MenuItem from "@mui/material/MenuItem";
 import * as Icons from "@mui/icons-material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs from "dayjs";
+import { DatePicker } from "rsuite";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
 import {
   EXPENSE_CREATE_ERROR_MESSAGE,
   createExpense,
-  getAllExpenses,
+  searchByDate,
 } from "../../redux/features/expenses/expenseSlice";
-import { IconButton } from "@mui/material";
-import { PhotoCamera, Close } from "@mui/icons-material";
 
 const ExpenseModals = ({
   isOpen,
@@ -26,6 +20,7 @@ const ExpenseModals = ({
   activeTab,
   allAccounts,
   allCategories,
+  date,
 }) => {
   const dispatch = useDispatch();
   const { createErrorMessage } = useSelector((state) => state.expense);
@@ -34,7 +29,27 @@ const ExpenseModals = ({
   const [account, setAccount] = useState("");
   const [category, setCategory] = useState("");
   const [comments, setComments] = useState("");
+
+  const currentDate = new Date();
+  const year = currentDate.getFullYear();
+  
+  const month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+  const day = ('0' + currentDate.getDate()).slice(-2);
+  const formattedCurrentDate = `${year}-${month}-${day}`;
+
+  const [expenseDate, setExpenseDate] = useState(formattedCurrentDate);
+
   const [images, setImages] = useState([]);
+
+  const handleDateChange = (date) => {
+    if (date) {
+      const year = date.getFullYear();
+      const month = ('0' + (date.getMonth() + 1)).slice(-2);
+      const day = ('0' + date.getDate()).slice(-2);
+      const formattedDate = `${year}-${month}-${day}`;
+      setExpenseDate(formattedDate);
+    }
+  };
 
   const handleImageChange = (e) => {
     const fileList = Array.from(e.target.files);
@@ -51,27 +66,18 @@ const ExpenseModals = ({
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  // useEffect(() => {
-  //   if (activeTab === "expenses") {
-  //     setExpenseType(1);
-  //   } else if (activeTab === "income") {
-  //     setExpenseType(2);
-  //   }
-  // }, [activeTab]);
-
-  const today = dayjs();
-
   const handleSave = async () => {
     const formData = new FormData();
-    formData.append('amount', amount);
-    formData.append('account_id', account);
-    formData.append('category_id', category);
-    formData.append('comments', comments);
+    formData.append("amount", amount);
+    formData.append("account_id", account);
+    formData.append("category_id", category);
+    formData.append("comments", comments);
+    formData.append("expense_date", expenseDate);
     images.forEach((image, index) => {
       formData.append(`photo[${index}]`, image.file);
     });
     const response = await dispatch(createExpense(formData));
-  
+
     if (response.payload.success === true) {
       dispatch(EXPENSE_CREATE_ERROR_MESSAGE(""));
       // Reset state variables
@@ -82,14 +88,20 @@ const ExpenseModals = ({
       setImages([]); // Clear images array
       onClose();
     }
-    dispatch(getAllExpenses());
+    dispatch(searchByDate(date));
   };
-  
 
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className="modal-container">
         <h2>Add Expense</h2>
+        <div className="date-picker">
+          <DatePicker
+            defaultValue={new Date()}
+            format="dd.MM.yyyy"
+            onChange={handleDateChange}
+          />
+        </div>
         <TextField
           style={{ marginTop: "15px" }}
           label="Amount"
@@ -153,9 +165,6 @@ const ExpenseModals = ({
         {createErrorMessage && (
           <p className="error-message">{createErrorMessage.category_id}</p>
         )}
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker defaultValue={today} />
-        </LocalizationProvider>
         <div>
           <input
             type="file"
@@ -170,7 +179,9 @@ const ExpenseModals = ({
             style={{ cursor: "pointer", position: "relative" }}
           >
             <InputAdornment position="start">
-              <span className="image-label"><Icons.AddAPhoto></Icons.AddAPhoto>Add Photos</span>
+              <span className="image-label">
+                <Icons.AddAPhoto></Icons.AddAPhoto>Add Photos
+              </span>
             </InputAdornment>
           </label>
           <div className="image-list">
@@ -181,7 +192,12 @@ const ExpenseModals = ({
                   alt={`Image ${index}`}
                   style={{ width: "50px", height: "50px" }}
                 />
-                <div className="delete-icon" onClick={() => handleRemoveImage(index)}>X</div>
+                <div
+                  className="delete-icon"
+                  onClick={() => handleRemoveImage(index)}
+                >
+                  X
+                </div>
               </div>
             ))}
           </div>

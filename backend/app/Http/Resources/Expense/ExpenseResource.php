@@ -22,6 +22,7 @@ class ExpenseResource extends JsonResource
             'account' => new AccountResource($this->account),
             'category' => new CategoryResource($this->category),
             'comments' => $this->comments,
+            'expense_date' => $this->expense_date,
             'photo' => $this->media,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

@@ -36,6 +36,9 @@ class ExpenseUpdateRequest extends FormRequest
             'comments' => [
                 'string', 'nullable'
             ],
+            'expense_date' => [
+                'string','nullable'
+            ],
             'photo.*' => [
                 'nullable', 'image', 'mimes:jpg,jpeg,png'
             ],

@@ -102,6 +102,26 @@ export const getExpense = createAsyncThunk(
   }
 );
 
+//search by date
+
+export const searchByDate = createAsyncThunk(
+  "expense/search-by-day",
+  async (formData, thunkAPI) => {
+    try {
+      return await expenseServices.searchByDate(formData);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      console.log(message);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
   const expenseSlice = createSlice({
     name: "expense",
     initialState,
@@ -189,6 +209,23 @@ export const getExpense = createAsyncThunk(
           state.isLoading = false;
           state.isError = true;
           state.editErrorMessage = action.payload;
+          // toast.error(action.payload);
+        })
+        .addCase(searchByDate.pending, (state) => {
+          state.isLoading = true;
+        })
+        .addCase(searchByDate.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isSuccess = true;
+          state.isError = false;
+          state.expenses = action.payload.expense;
+          state.allAccounts = action.payload.accounts;
+          state.allCategories = action.payload.categories;
+        })
+        .addCase(searchByDate.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.message = action.payload;
           // toast.error(action.payload);
         });
     },

@@ -48,6 +48,7 @@ class ExpenseController extends Controller
             'account_id',
             'category_id',
             'comments',
+            'expense_date',
             'photo'
         ]);
 
@@ -102,6 +103,7 @@ class ExpenseController extends Controller
             'category_id',
             'account_id',
             'comments',
+            'expense_date',
             'photo_ids'
         ]);
 
@@ -213,13 +215,17 @@ class ExpenseController extends Controller
      * Display a listing of the expenses basen on search dates.
      *
      * @param ExpenseFilterRequest $request
-     * @return JsonResponse
+     * @return mixed
      */
 
-    public function searchByDate(ExpenseFilterRequest $request): JsonResponse
+    public function searchByDate(ExpenseFilterRequest $request): mixed
     {
         $date = Carbon::parse($request->input('date'));
-        $expenses = Expense::whereDate('created_at', $date)->get();
-        return $this->success(__('Expenses'), ExpenseResource::collection($expenses), Response::HTTP_OK);
+        $expenses = Expense::whereDate('expense_date', $date)->get();
+        return [
+            'accounts' => Account::all(),
+            'categories' => Category::all(),
+            'expense' => ExpenseResource::collection($expenses)
+        ];
     }
 }

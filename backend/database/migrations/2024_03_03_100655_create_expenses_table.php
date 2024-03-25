@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('amount');
             $table->foreignId('account_id')->constrained('accounts')->cascadeOndelete();
             $table->foreignId('category_id')->nullable();
+            $table->date('expense_date');
             $table->text('comments')->nullable();
             $table->timestamps();
         });

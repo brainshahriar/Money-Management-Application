@@ -11,9 +11,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectTotalBalance } from "../../redux/features/account/accountSlice";
 import { selectIsLoggedIn } from "../../redux/features/auth/authSlice";
 import { useEffect } from "react";
-import { getAllExpenses } from "../../redux/features/expenses/expenseSlice";
+import { searchByDate } from "../../redux/features/expenses/expenseSlice";
 import AddIcon from "@mui/icons-material/Add";
 import ExpenseModals from "./ExpenseModals";
+import DateNavTab from "./DateNavTab";
 
 export default function Home() {
   useRedirectLoggedOutUser("/login");
@@ -24,14 +25,21 @@ export default function Home() {
   const { message, isLoading, isError, expenses, allAccounts, allCategories } =
     useSelector((state) => state.expense);
 
+  const [date, setDate] = useState(new Date());
+
+  const handleDateChange = (date) => {
+    setDate(date);
+    dispatch(searchByDate({ date }));
+  };
+
   useEffect(() => {
     if (isLoggedIn === true) {
-      dispatch(getAllExpenses());
+      dispatch(searchByDate({ date }));
     }
     if (isError) {
       console.log(message);
     }
-  }, [isLoggedIn, isError, message, dispatch]);
+  }, [isLoggedIn, isError, message, dispatch, date]);
 
   const [isModalOpen, setModalOpen] = useState(false);
 
@@ -129,6 +137,7 @@ export default function Home() {
               Income
             </button>
           </div>
+          <DateNavTab onDateChange={handleDateChange} />
           <div className="add-icon-div">
             <button className="add-icon-button" onClick={openModal}>
               <AddIcon className="add-icon" fontSize="large" />
@@ -139,6 +148,7 @@ export default function Home() {
               activeTab={activeTab}
               allAccounts={allAccounts}
               allCategories={allCategories}
+              date={date}
             />
           </div>
           <div className="tabContent">
@@ -147,6 +157,7 @@ export default function Home() {
                 expenses={expenses}
                 allAccounts={allAccounts}
                 allCategories={allCategories}
+                date={date}
               />
             )}
             {activeTab === "income" && <IncomesTab />}

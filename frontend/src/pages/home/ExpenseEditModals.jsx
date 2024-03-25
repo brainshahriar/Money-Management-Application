@@ -6,17 +6,14 @@ import InputAdornment from "@mui/material/InputAdornment";
 import "./home.css";
 import MenuItem from "@mui/material/MenuItem";
 import * as Icons from "@mui/icons-material";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs from "dayjs";
+import { DatePicker } from "rsuite";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import {
   EXPENSE_EDIT_ERROR_MESSAGE,
   deleteExpense,
-  getAllExpenses,
   getExpense,
+  searchByDate,
   selectExpense,
   updateExpense,
 } from "../../redux/features/expenses/expenseSlice";
@@ -27,6 +24,7 @@ const ExpenseEditModals = ({
   selectedExpenseId,
   allAccounts,
   allCategories,
+  date
 }) => {
   const dispatch = useDispatch();
   const { editErrorMessage } = useSelector((state) => state.expense);
@@ -35,9 +33,22 @@ const ExpenseEditModals = ({
   const [account, setAccount] = useState("");
   const [category, setCategory] = useState("");
   const [comments, setComments] = useState("");
+  const [expenseDate, setExpenseDate] = useState('');
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [imageId, setImageId] = useState([]);
+
+  console.log(expenseDate);
+
+  const handleDateChange = (date) => {
+    if (date) {
+      const year = date.getFullYear();
+      const month = ('0' + (date.getMonth() + 1)).slice(-2);
+      const day = ('0' + date.getDate()).slice(-2);
+      const formattedDate = `${year}-${month}-${day}`;
+      setExpenseDate(formattedDate);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -47,7 +58,7 @@ const ExpenseEditModals = ({
 
   const handleDelete = async (id) => {
     dispatch(deleteExpense(id));
-    dispatch(getAllExpenses());
+    dispatch(searchByDate(date));
     onClose();
   };
 
@@ -68,7 +79,6 @@ const ExpenseEditModals = ({
     setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
-  const today = dayjs();
 
   const handleUpdate = async (id) => {
     const formData = new FormData();
@@ -78,6 +88,7 @@ const ExpenseEditModals = ({
     formData.append("account_id", account);
     formData.append("category_id", category);
     formData.append("comments", comments);
+    formData.append("expense_date", expenseDate);
     formData.append("_method", "PUT");
 
     imageId.forEach((id, index) => {
@@ -94,7 +105,7 @@ const ExpenseEditModals = ({
       setImages([]);
       onClose();
     }
-    dispatch(getAllExpenses());
+    dispatch(searchByDate(date));
   };
 
   useEffect(() => {
@@ -110,6 +121,7 @@ const ExpenseEditModals = ({
       setCategory(expenseEdit.category.id || "");
       setAccount(expenseEdit.account.id || "");
       setComments(expenseEdit.comments || "");
+      setExpenseDate(expenseEdit.expense_date || "");
       setPreviewImages(expenseEdit.photo || "");
     }
   }, [expenseEdit]);
@@ -117,6 +129,13 @@ const ExpenseEditModals = ({
     <Modal open={isOpen} onClose={onClose}>
       <div className="modal-container">
         <h2>Edit Expense</h2>
+        <div className="date-picker">
+          <DatePicker
+            defaultValue={new Date()}
+            format="dd.MM.yyyy"
+            onChange={handleDateChange}
+          />
+        </div>
         <TextField
           style={{ marginTop: "15px" }}
           label="Amount"
@@ -180,9 +199,6 @@ const ExpenseEditModals = ({
         {editErrorMessage && (
           <p className="error-message">{editErrorMessage.category_id}</p>
         )}
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker defaultValue={today} />
-        </LocalizationProvider>
         <div>
           <input
             type="file"

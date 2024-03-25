@@ -41,7 +41,7 @@ const getExpense = async (id) => {
       Authorization: `Bearer ${token}`,
     },
   };
-  const response = await axios.get(`${BACKEND_URL}/api/expenses/${id}`,config);
+  const response = await axios.get(`${BACKEND_URL}/api/expenses/${id}`, config);
   return response.data;
 };
 
@@ -50,33 +50,57 @@ const getExpense = async (id) => {
 const deleteExpense = async (id) => {
   const token = localStorage.getItem("token");
   const config = {
-    headers:{
+    headers: {
       Authorization: `Bearer ${token}`,
-    }
+    },
   };
-  const response = await axios.delete(`${BACKEND_URL}/api/expenses/${id}`,config);
+  const response = await axios.delete(
+    `${BACKEND_URL}/api/expenses/${id}`,
+    config
+  );
   return response.data;
 };
 
 // Update a category
 
-const updateExpense = async (id,formData) => {
+const updateExpense = async (id, formData) => {
   const token = localStorage.getItem("token");
   const config = {
-    headers:{
+    headers: {
       Authorization: `Bearer ${token}`,
-    }
+    },
   };
-  const response = await axios.post(`${BACKEND_URL}/api/expenses/${id}`,formData,config);
+  const response = await axios.post(
+    `${BACKEND_URL}/api/expenses/${id}`,
+    formData,
+    config
+  );
   return response.data;
 };
+
+//search by date
+
+const searchByDate = async (formData) => {
+  const token = localStorage.getItem("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const response = await axios.post(
+    `${BACKEND_URL}/api/expenses/search`,
+    formData,config
+  );
+  return response.data;
+};
+
 
 const expenseServices = {
   allExpenses,
   createExpense,
   getExpense,
   deleteExpense,
-  updateExpense
+  updateExpense,
+  searchByDate
 };
-
 export default expenseServices;

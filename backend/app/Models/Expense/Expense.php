@@ -18,6 +18,7 @@ class Expense extends Model
         'amount',
         'account_id',
         'category_id',
+        'expense_date',
         'comments'
     ];
 
